@@ -45,3 +45,6 @@ docs/_build/
 
 twine/*
 test_venv/*
+
+venv/*
+.idea
