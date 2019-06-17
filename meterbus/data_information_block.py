@@ -52,6 +52,24 @@ class DataInformationBlock(TelegramField):
         return False
 
     @property
+    def storage_number(self):
+        try:
+            shift = 1
+            dif = self.parts[0]
+            storage_number = int(dif & 0x40 > 0)
+
+            for dife in self.parts[1:]:
+                storage_number += (int(dife & 0x0F) << shift)
+                shift = 4
+
+            return storage_number
+        except IndexError:
+            pass
+
+        return None
+
+
+    @property
     def more_records_follow(self):
         try:
             dif = self.parts[0]
