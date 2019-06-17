@@ -19,6 +19,16 @@ class TestSequenceFunctions(unittest.TestCase):
         self.dib8 = meterbus.DataInformationBlock([0x0F])
         self.dib9 = meterbus.DataInformationBlock([0x1F])
         self.dib10 = meterbus.DataInformationBlock([0x9F])
+        self.dib11 = meterbus.DataInformationBlock([0x80, 0x0C])
+
+    def test_repr(self):
+        self.assertEqual(repr(self.dib_empty), "DataInformationBlock([])")
+        self.assertEqual(repr(self.dib0), "DataInformationBlock([12])")
+        self.assertEqual(repr(self.dib7), "DataInformationBlock([47])")
+        self.assertEqual(repr(self.dib8), "DataInformationBlock([15])")
+        self.assertEqual(repr(self.dib9), "DataInformationBlock([31])")
+        self.assertEqual(repr(self.dib10), "DataInformationBlock([159])")
+        self.assertEqual(repr(self.dib11), "DataInformationBlock([128, 12])")
 
     def test_empty_dib_has_extension_bit(self):
         self.assertEqual(self.dib_empty.has_extension_bit, False)
