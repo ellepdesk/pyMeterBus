@@ -18,6 +18,7 @@ class TestSequenceFunctions(unittest.TestCase):
         self.dib7 = meterbus.DataInformationBlock([0x2F])
         self.dib8 = meterbus.DataInformationBlock([0x0F])
         self.dib9 = meterbus.DataInformationBlock([0x1F])
+        self.dib10 = meterbus.DataInformationBlock([0x9F])
 
     def test_empty_dib_has_extension_bit(self):
         self.assertEqual(self.dib_empty.has_extension_bit, False)
@@ -27,6 +28,9 @@ class TestSequenceFunctions(unittest.TestCase):
 
     def test_empty_dib_is_eoud(self):
         self.assertEqual(self.dib_empty.is_eoud, False)
+
+    def test_empty_dib_no_lsb_of_storage_number(self):
+        self.assertEqual(self.dib_empty.storage_number, None)
 
     def test_empty_dib_more_records_follow(self):
         self.assertEqual(self.dib_empty.more_records_follow, False)
@@ -50,6 +54,9 @@ class TestSequenceFunctions(unittest.TestCase):
         self.assertEqual(self.dib0.function_type,
                          meterbus.FunctionType.INSTANTANEOUS_VALUE)
 
+    def test_dib0_lsb_of_storage_number_zero(self):
+        self.assertEqual(self.dib0.storage_number, 0)
+
     def test_dib7_function_type(self):
         self.assertEqual(self.dib7.function_type,
                          meterbus.FunctionType.SPECIAL_FUNCTION_FILL_BYTE)
@@ -64,6 +71,13 @@ class TestSequenceFunctions(unittest.TestCase):
     def test_dib9_function_type(self):
         self.assertEqual(self.dib9.function_type,
                          meterbus.FunctionType.MORE_RECORDS_FOLLOW)
+
+    def test_dib9_lsb_of_storage_number_zero(self):
+        self.assertEqual(self.dib9.storage_number, 0)
+
+    def test_dib10_lsb_of_storage_number_one(self):
+        self.assertEqual(self.dib10.storage_number, 1)
+
 
 if __name__ == '__main__':
     unittest.main()
