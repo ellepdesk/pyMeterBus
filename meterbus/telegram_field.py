@@ -138,6 +138,9 @@ class TelegramField(object):
         return " ".join(
             [hex(x).replace('0x', '').zfill(2) for x in self.parts])
 
+    def __repr__(self):
+        return "{name}({parts})".format(name=type(self).__name__, parts=self.parts)
+
     def __getitem__(self, key):
         return self.parts[key]
 
