@@ -162,7 +162,6 @@ class TelegramVariableDataRecord(object):
         mult, unit, typ = self._parse_vifx()
         dlen, enc = self.dib.length_encoding
 
-        storage_number = self.dib.storage_number
 
         try:
             unit = str(unit).decode('unicode_escape')
@@ -180,12 +179,15 @@ class TelegramVariableDataRecord(object):
             value = self._dataField.decodeRAW
 
         return {
+            'vib': self.vib.parts,
+            'dib': self.dib.parts,
             'value': value,
             'unit': unit,
+            'mult': mult,
             'type': str(typ),
             'function': str(self.dib.function_type),
             'encoding': str(enc),
-            'storage_number': storage_number,
+            'storage_number': self.dib.storage_number,
         }
 
     def to_JSON(self):
