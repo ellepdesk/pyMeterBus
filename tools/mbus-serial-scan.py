@@ -35,6 +35,9 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--retries',
                         type=int, default=5,
                         help='Number of ping retries for each address')
+    parser.add_argument('-s', '--stop',
+                        type=bool,default=False,
+                        help='Stop on first reply')
     parser.add_argument('device', type=str, help='Serial device or URI')
 
     args = parser.parse_args()
@@ -49,5 +52,7 @@ if __name__ == '__main__':
                     print(
                         "Found a M-Bus device at address {0}".format(address)
                     )
+                    if args.stop:
+                        break
     except serial.serialutil.SerialException as e:
         print(e)
