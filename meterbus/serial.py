@@ -79,6 +79,43 @@ def send_request_frame_multi(ser, address=None, req=None):
 
   return frame
 
+def send_request_setPrimary(ser, address, newAddress):
+    frame = TelegramLong()
+    frame.header.cField.parts = [
+        CONTROL_MASK_SND_UD | CONTROL_MASK_DIR_M2S | CONTROL_MASK_FCB
+    ]
+
+    frame.header.aField.parts = [address]
+
+    frame.body.bodyHeaderLength = 1
+    frame_data = [
+        CONTROL_INFO_DATA_SEND,
+        0x01, 0x7A, newAddress
+   ]
+
+    frame.body.load(frame_data)
+    serial_send(ser, frame)
+
+def send_request_setLUG_G4_readout_control(ser, address, ASB=0x01):
+    # ASB = 00h  modern data output G4 compatible
+    # ASB = 01h  downward compatible data output G2 compatible
+    # ASB = 02h  data output in fixed frame (EN 1434-3: 1997)
+    frame = TelegramLong()
+    frame.header.cField.parts = [
+        CONTROL_MASK_SND_UD | CONTROL_MASK_DIR_M2S | CONTROL_MASK_FCB
+    ]
+
+    frame.header.aField.parts = [address]
+
+    frame.body.bodyHeaderLength = 1
+    frame_data = [
+        CONTROL_INFO_DATA_SEND,
+        0x01, 0xFD, 0x8B, 0x00, ASB
+   ]
+
+    frame.body.load(frame_data)
+    serial_send(ser, frame)
+
 def send_select_frame(ser, secondary_address):
   frame = TelegramLong()
 
@@ -151,6 +188,7 @@ def recv_frame(ser, length=1):
 
         except MbusFrameLengthError as e:
             length = (e.length) - len(data)
+
 
   if len(data):
     return False
