@@ -7,7 +7,6 @@ import serial
 import time
 import os
 import stat
-import _thread as thread
 
 try:
     import meterbus
@@ -15,8 +14,6 @@ except ImportError:
     import sys
     sys.path.append('../')
     import meterbus
-
-keep_going = True
 
 def ping_address(ser, address, retries=5):
     for i in range(0, retries + 1):
@@ -27,6 +24,17 @@ def ping_address(ser, address, retries=5):
                 return True
         except meterbus.MBusFrameDecodeError:
             pass
+
+    return False
+
+def setG4modern(ser, address):
+    meterbus.send_request_setLUG_G4_readout_control(ser, address, 0x00)
+    try:
+        frame = meterbus.load(meterbus.recv_frame(ser, 1))
+        if isinstance(frame, meterbus.TelegramACK):
+            return True
+    except meterbus.MBusFrameDecodeError:
+        pass
 
     return False
 
@@ -51,31 +59,58 @@ def do_char_dev(args):
         #vib_to_show = ['14:0','59:0','89:0', '93:0']
         filter = {((14,), 0, 0): "one",
                   #((14,), 0, 1): "one_b",
-                  ((59,), 0, 0): "two",
-                  ((89,), 0, 0): "three",
-                  ((93,), 0, 0): "four",
+                  ((59,), 0, 0): "FLOW",
+                  ((62,), 0, 0): "FLOW",
+                  ((89,), 0, 0): "FLOW_TEMPERATURE",
+                  ((91,), 0, 0): "FLOW_TEMPERATURE",
+                  ((93,), 0, 0): "RETURN_TEMPERATURE",
+                  ((95,), 0, 0): "RETURN_TEMPERATURE",
                   ((255, 34), 0, 0): "five",
                   }
 
         ibt = meterbus.inter_byte_timeout(args.baudrate)
+
+
+        parity = 'E'
+        if args.SWB: parity = 'N'
+
         with serial.serial_for_url(args.device,
-                           args.baudrate, 8, 'E', 1,
+                           args.baudrate, 8, parity, 1,
                            inter_byte_timeout=ibt,
                            timeout=1) as ser:
-            frame = None
 
             if meterbus.is_primary_address(address):
-                ping_address(ser, meterbus.ADDRESS_NETWORK_LAYER, 0)
-                t_start = time.time()-100
+                if not args.SWB:
+                    ping_address(ser, address, 0)
+                    #ping_address(ser, meterbus.ADDRESS_NETWORK_LAYER, 0)
+
+                    #setG4modern(ser, address)
+                    #print("Landis+Gyr needs time")
+                    #time.sleep(4)
+                    #print("done")
+
+                t_start = time.time()-3
+
                 try:
-                    while keep_going:
+                    #ser.read(1)
+                    while True:
                         time.sleep(0.1)
-                        if (time.time() - t_start) <= 10:
-                            continue
-                        t_start=time.time()
-                        meterbus.send_request_frame(ser, address)
-                        framedata = meterbus.recv_frame(ser, meterbus.FRAME_DATA_LENGTH)
-                        frame = meterbus.load(framedata)
+
+                        if not args.SWB:
+                            if (time.time() - t_start) <= int(args.sleep):
+                                continue
+                            t_start = time.time()
+                            meterbus.send_request_frame(ser, address)
+                            time.sleep(0.2)
+
+                        frame = None
+                        #print(ser.inWaiting(), end = ' ')
+                        if ser.inWaiting(): # >= 205:
+                            #ser.read()
+                            framedata = meterbus.recv_frame(ser,  meterbus.FRAME_DATA_LENGTH)
+                            print("frame:  ",framedata)
+                            if framedata:
+                                frame = meterbus.load(framedata)
 
 
                         if not frame:
@@ -93,7 +128,7 @@ def do_char_dev(args):
                             storage_number = record.dib.storage_number
                             key = (vib, func, storage_number)
                             if key in filter:
-                                name = filter[key]
+                                #name = filter.get(key,"value")
                                 filtered['records'].append(record.interpreted)
                                 # print(name)
                                 #record = records[vib]
@@ -137,17 +172,13 @@ def do_char_dev(args):
     except serial.serialutil.SerialException as e:
         print(e)
 
-
-def key_capture_thread():
-    global keep_going
-    print("bla{} bla".format(input()))
-    keep_going = False
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Request data over serial M-Bus for devices.')
     parser.add_argument('-d', action='store_true',
                         help='Enable verbose debug')
+    parser.add_argument('-m', '--monitor', action='store_true',
+                        help='monitor channel, will not send request, listen only')
     parser.add_argument('-b', '--baudrate',
                         type=int, default=2400,
                         help='Serial bus baudrate')
@@ -157,6 +188,9 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--retries',
                         type=int, default=5,
                         help='Number of ping retries for each address')
+    parser.add_argument('-s', '--sleep',
+                        type=int, default=10,
+                        help='Sleep time')
     parser.add_argument('device', type=str, help='Serial device, URI or binary file')
 
     args = parser.parse_args()
@@ -173,4 +207,3 @@ if __name__ == '__main__':
             do_char_dev(args)
     except OSError:
         do_char_dev(args)
-
