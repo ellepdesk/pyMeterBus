@@ -4,7 +4,10 @@ from builtins import (bytes, str, open, super, range,
 import binascii
 
 import simplejson as json
-from Crypto.Cipher import AES
+try:
+    from Crypto.Cipher import AES
+except ImportError:
+    print("Crypto not installed, support for AES disabled")
 
 from .core_objects import DataEncoding, FunctionType
 from .telegram_field import TelegramField
@@ -177,7 +180,7 @@ class WTelegramBaseDataHeader(object):
     def encryption_name(self):
         """ Return speaking name for encryption mode (defined in prEN 13575-3)
 
-        Note, that OMS Security Report and BSI TRs resp. OMS 4 define further 
+        Note, that OMS Security Report and BSI TRs resp. OMS 4 define further
         modes currently not covered here.
 
         0 No encryption used
@@ -208,7 +211,7 @@ class WTelegramBaseDataHeader(object):
     def crypto_iv(self):
         """ Returns the IV in little endian
         The IV is derived from the manufacturer bytes, the device address and
-        the access number from the data header. Note, that None is being 
+        the access number from the data header. Note, that None is being
         returned if the current mode does not specify an IV or the IV for that
         specific mode is not implemented.
 
