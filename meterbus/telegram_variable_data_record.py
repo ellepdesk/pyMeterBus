@@ -188,6 +188,8 @@ class TelegramVariableDataRecord(object):
             'function': str(self.dib.function_type),
             'encoding': str(enc),
             'storage_number': self.dib.storage_number,
+            'tariff': self.dib.tariff,
+            'subunit': self.dib.subunit,
         }
 
     def to_JSON(self):

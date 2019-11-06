@@ -52,6 +52,26 @@ class DataInformationBlock(TelegramField):
         return False
 
     @property
+    def subunit(self):
+        if len(self.parts) == 1:
+            return None
+        subunit = 0
+        shift = 0
+        for dife in self.parts[1:]:
+            subunit += (int(dife & 0x40 > 0) << shift)
+            shift += 1
+
+    @property
+    def tariff(self):
+        if len(self.parts) == 1:
+            return None
+        tariff = 0
+        shift = 0
+        for dife in self.parts[1:]:
+            tariff += (int(dife & 0x30 >> 4) << shift)
+            shift += 2
+
+    @property
     def storage_number(self):
         try:
             shift = 1
@@ -67,7 +87,6 @@ class DataInformationBlock(TelegramField):
             pass
 
         return None
-
 
     @property
     def more_records_follow(self):
