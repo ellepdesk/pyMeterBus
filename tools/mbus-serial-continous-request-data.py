@@ -66,13 +66,16 @@ def do_char_dev(args):
                   ((93,), 0, 0): "RETURN_TEMPERATURE",
                   ((95,), 0, 0): "RETURN_TEMPERATURE",
                   ((255, 34), 0, 0): "five",
-                  }
+                  ((90,), 0, 0): "FLOW_TEMPERATURE",
+                  ((94,), 0, 0): "RETURN_TEMPERATURE",
+
+        }
 
         ibt = meterbus.inter_byte_timeout(args.baudrate)
 
 
         parity = 'E'
-        if args.SWB: parity = 'N'
+        if args.monitor: parity = 'N'
 
         with serial.serial_for_url(args.device,
                            args.baudrate, 8, parity, 1,
@@ -80,7 +83,7 @@ def do_char_dev(args):
                            timeout=1) as ser:
 
             if meterbus.is_primary_address(address):
-                if not args.SWB:
+                if not args.monitor:
                     ping_address(ser, address, 0)
                     #ping_address(ser, meterbus.ADDRESS_NETWORK_LAYER, 0)
 
@@ -96,7 +99,7 @@ def do_char_dev(args):
                     while True:
                         time.sleep(0.1)
 
-                        if not args.SWB:
+                        if not args.monitor:
                             if (time.time() - t_start) <= int(args.sleep):
                                 continue
                             t_start = time.time()
