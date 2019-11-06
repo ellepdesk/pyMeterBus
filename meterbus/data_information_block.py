@@ -60,7 +60,7 @@ class DataInformationBlock(TelegramField):
 
             for dife in self.parts[1:]:
                 storage_number += (int(dife & 0x0F) << shift)
-                shift = 4
+                shift += 4
 
             return storage_number
         except IndexError:
