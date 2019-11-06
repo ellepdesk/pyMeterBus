@@ -116,6 +116,29 @@ def send_request_setLUG_G4_readout_control(ser, address, ASB=0x01):
     frame.body.load(frame_data)
     serial_send(ser, frame)
 
+
+def send_request_setLUG_G4_fast_readout(ser, address, enable=True):
+    if enable:
+        data = 0xA1
+    else:
+        data = 0xA0
+
+    frame = TelegramLong()
+    frame.header.cField.parts = [
+        CONTROL_MASK_SND_UD | CONTROL_MASK_DIR_M2S | CONTROL_MASK_FCB
+    ]
+
+    frame.header.aField.parts = [address]
+
+    frame.body.bodyHeaderLength = 1
+    frame_data = [
+        CONTROL_INFO_DATA_SEND,
+        0x0F, data
+    ]
+
+    frame.body.load(frame_data)
+    serial_send(ser, frame)
+
 def send_select_frame(ser, secondary_address):
   frame = TelegramLong()
 

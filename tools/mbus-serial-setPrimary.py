@@ -36,6 +36,17 @@ def setG4modern(address):
 
     return False
 
+def setG4fast(address, enable=True):
+    meterbus.send_request_setLUG_G4_fast_readout(ser, address, enable)
+    try:
+        frame = meterbus.load(meterbus.recv_frame(ser, 1))
+        if isinstance(frame, meterbus.TelegramACK):
+            return True
+    except meterbus.MBusFrameDecodeError:
+        pass
+
+    return False
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -46,6 +57,10 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--modern',
                         action='store_true',
                         help='Sets modern data output G4 Landis und Gyr')
+    parser.add_argument('-f', '--fast',
+                        action='store_true',
+                        help='Sets fast readout mode G4 Landis und Gyr')
+
     parser.add_argument('-b', '--baudrate',
                         type=int, default=2400,
                         help='Serial bus baudrate')
@@ -71,7 +86,11 @@ if __name__ == '__main__':
                         print(
                             "Set M-Bus device at address {0} to G4 compatible modern output".format(args.address)
                         )
-
+                if args.fast:
+                    if setG4fast(args.address):
+                        print(
+                            "Set M-Bus device at address {0} to G4 fast readout".format(args.address)
+                        )
                 if args.newAddress:
                     if setPrimary(args.address, args.newAddress):
                         print(
