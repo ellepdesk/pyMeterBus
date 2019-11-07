@@ -60,6 +60,7 @@ class DataInformationBlock(TelegramField):
         for dife in self.parts[1:]:
             subunit += (int(dife & 0x40 > 0) << shift)
             shift += 1
+        return subunit
 
     @property
     def tariff(self):
@@ -70,6 +71,7 @@ class DataInformationBlock(TelegramField):
         for dife in self.parts[1:]:
             tariff += (int(dife & 0x30 >> 4) << shift)
             shift += 2
+        return tariff
 
     @property
     def storage_number(self):
